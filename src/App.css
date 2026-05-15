@@ -1,0 +1,353 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: #090b0d;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 390px;
+  padding: 16px;
+  background: rgba(8, 10, 12, 0.94);
+  border-right: 2px solid rgba(255, 255, 255, 0.08);
+  z-index: 10;
+}
+
+.logoBox {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  margin-bottom: 16px;
+  background: linear-gradient(180deg, #191919, #090909);
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+.logoBox h1 {
+  margin: 0;
+  font-size: 32px;
+  color: #ffc75f;
+  font-family: Georgia, serif;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.logoIcon,
+.torch {
+  font-size: 30px;
+}
+
+.panel {
+  padding: 16px;
+  margin-bottom: 14px;
+  background: rgba(10, 12, 14, 0.92);
+  border: 1px solid #2f3338;
+  border-radius: 8px;
+}
+
+.panel h2 {
+  margin: 0 0 14px;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.timerDisplay {
+  padding: 18px;
+  margin-bottom: 14px;
+  text-align: center;
+  font-size: 50px;
+  font-weight: bold;
+  letter-spacing: 5px;
+  color: #74d46f;
+  background: #0b0d0f;
+  border: 1px solid #252a30;
+  border-radius: 6px;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  border: 0;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+.buttons button {
+  flex: 1;
+  padding: 13px 8px;
+  text-transform: uppercase;
+}
+
+.start {
+  background: linear-gradient(#2f9f3c, #176d22);
+}
+
+.pause {
+  background: linear-gradient(#c88613, #8a5508);
+}
+
+.reset {
+  background: linear-gradient(#bd372d, #7d1914);
+}
+
+label {
+  display: block;
+  margin: 10px 0 6px;
+  color: #d1d1d1;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  background: #111417;
+  color: white;
+  border: 1px solid #30343a;
+  border-radius: 6px;
+  outline: none;
+}
+
+.timeInputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.add {
+  width: 100%;
+  padding: 14px;
+  margin-top: 16px;
+  background: linear-gradient(#255b9c, #163c6a);
+  text-transform: uppercase;
+}
+
+.alertItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 13px 0;
+  border-bottom: 1px solid #22272d;
+}
+
+.small {
+  padding: 10px;
+}
+
+.animationBtn {
+  width: 100%;
+  padding: 14px;
+  background: #151a1f;
+  border: 1px solid #2c333b;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  color: #d8d8d8;
+  font-size: 14px;
+}
+
+.checkRow input {
+  width: auto;
+  transform: scale(1.2);
+}
+
+.gameArea {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.35)),
+    url("/assets/bg-hunt.png");
+  background-size: cover;
+  background-position: center;
+}
+
+.gameArea::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 80%, rgba(0, 0, 0, 0.45), transparent 45%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.topControls {
+  position: absolute;
+  right: 24px;
+  top: 24px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.topControls button {
+  padding: 14px 18px;
+  background: rgba(10, 13, 16, 0.8);
+  border: 1px solid #333;
+}
+
+.massadaToggle {
+  padding: 12px 14px;
+  background: rgba(10, 13, 16, 0.88);
+  border: 1px solid #333;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.massadaToggle input {
+  width: auto;
+  transform: scale(1.2);
+}
+
+.battleScene {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.player {
+  position: absolute;
+  width: 180px;
+  height: 190px;
+  text-align: center;
+  filter: drop-shadow(0 18px 10px rgba(0, 0, 0, 0.9));
+  z-index: 5;
+}
+
+.playerName {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+  text-align: center;
+  text-shadow:
+    2px 2px 0 #000,
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.playerSprite {
+  width: 180px;
+  height: 160px;
+  object-fit: contain;
+  object-position: center bottom;
+  image-rendering: pixelated;
+}
+
+.monk {
+  left: 52%;
+  top: 35%;
+}
+
+.knight {
+  left: 52%;
+  top: 50%;
+}
+
+.sorcerer {
+  left: 22%;
+  top: 36%;
+}
+
+.druid {
+  left: 30%;
+  top: 30%;
+}
+
+.archer {
+  left: 22%;
+  top: 50%;
+}
+
+.bossPlaceholder {
+  position: absolute;
+  left: 45%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 4;
+}
+
+.bossName {
+  color: #ff3838;
+  font-size: 25px;
+  font-weight: bold;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.bossHp {
+  width: 220px;
+  height: 15px;
+  margin: 4px auto 6px;
+  background: #100;
+  border: 2px solid #000;
+}
+
+.bossHp span {
+  display: block;
+  width: 88%;
+  height: 100%;
+  background: linear-gradient(90deg, #b61515, #ff3e3e);
+}
+
+.bossSpriteImage {
+  width: 340px;
+  height: 340px;
+  object-fit: contain;
+  object-position: center bottom;
+  image-rendering: pixelated;
+  filter:
+    drop-shadow(0 18px 16px rgba(0, 0, 0, 0.95))
+    drop-shadow(0 0 15px rgba(255, 60, 60, 0.35));
+}
+
+.paused .playerSprite,
+.paused .bossSpriteImage {
+  filter: grayscale(0.25);
+}
+
+footer {
+  position: absolute;
+  bottom: 18px;
+  width: 100%;
+  text-align: center;
+  color: #a9a9a9;
+  z-index: 20;
+}
