@@ -39,6 +39,7 @@ const players = [
     name: "Old Ginka",
     className: "player knight",
     folder: "knight",
+    caixa2Folder: "knight_caixa2",
     color: "#8ecbff",
     nameBottom: "170px",
     nameLeft: "60%",
@@ -51,6 +52,7 @@ export default function App() {
   const [animations, setAnimations] = useState(true);
   const [repeatPotSkill, setRepeatPotSkill] = useState(true);
   const [massada, setMassada] = useState(false);
+  const [caixa2, setCaixa2] = useState(false);
 
   const [frame, setFrame] = useState(1);
   const [bossFrame, setBossFrame] = useState(1);
@@ -88,7 +90,7 @@ export default function App() {
     if (!animations) return;
 
     const interval = setInterval(() => {
-      setFrame((prev) => (prev >= 4 ? 1 : prev + 1));
+      setFrame((prev) => (prev >= 2 ? 1 : prev + 1));
     }, 220);
 
     return () => clearInterval(interval);
@@ -242,6 +244,15 @@ export default function App() {
             />
             Massada
           </label>
+
+          <label className="massadaToggle">
+            <input
+              type="checkbox"
+              checked={caixa2}
+              onChange={(e) => setCaixa2(e.target.checked)}
+            />
+            Caixa 2
+          </label>
         </div>
 
         <div className="battleScene">
@@ -261,26 +272,31 @@ export default function App() {
 
           {players
             .filter((p) => !(massada && p.hiddenByMassada))
-            .map((p) => (
-              <div className={p.className} key={p.name}>
-                <div
-                  className="playerName"
-                  style={{
-                    color: p.color,
-                    bottom: p.nameBottom,
-                    left: p.nameLeft,
-                  }}
-                >
-                  {p.name}
-                </div>
+            .map((p) => {
+              const currentFolder =
+                caixa2 && p.caixa2Folder ? p.caixa2Folder : p.folder;
 
-                <img
-                  className="playerSprite"
-                  src={`/assets/players/${p.folder}/${frame}.png`}
-                  alt={p.name}
-                />
-              </div>
-            ))}
+              return (
+                <div className={p.className} key={p.name}>
+                  <div
+                    className="playerName"
+                    style={{
+                      color: p.color,
+                      bottom: p.nameBottom,
+                      left: p.nameLeft,
+                    }}
+                  >
+                    {p.name}
+                  </div>
+
+                  <img
+                    className="playerSprite"
+                    src={`/assets/players/${currentFolder}/${frame}.png`}
+                    alt={p.name}
+                  />
+                </div>
+              );
+            })}
         </div>
 
         <footer>Tibia Timer © 2026 | Feito para hunters ⚔️</footer>
