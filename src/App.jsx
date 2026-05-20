@@ -90,7 +90,7 @@ export default function App() {
     if (!animations) return;
 
     const interval = setInterval(() => {
-      setFrame((prev) => (prev >= 2 ? 1 : prev + 1));
+      setFrame((prev) => (prev >= 4 ? 1 : prev + 1));
     }, 220);
 
     return () => clearInterval(interval);
