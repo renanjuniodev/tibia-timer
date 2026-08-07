@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
 const players = [
@@ -61,30 +61,76 @@ export default function App() {
   const [customMinutes, setCustomMinutes] = useState("");
   const [customSeconds, setCustomSeconds] = useState("");
   const [alerts, setAlerts] = useState([{ name: "Pot Skill", time: 600 }]);
+  const endTimeRef = useRef(null);
+
+  const audioCtxRef = useRef(null);
+  const alertBufferRef = useRef(null);
+  const scheduledAlertRef = useRef(null);
+
+  const runningRef = useRef(false);
+  const repeatPotSkillRef = useRef(true);
 
   useEffect(() => {
-    if (!running) return;
+   runningRef.current = running;
+  }, [running]);
 
-    const interval = setInterval(() => {
-      setSeconds((prev) => {
-        if (prev <= 1) {
-          playAlert();
+  useEffect(() => {
+    repeatPotSkillRef.current = repeatPotSkill;
+  }, [repeatPotSkill]);
 
-          if (repeatPotSkill) {
-            return 600;
+    useEffect(() => {
+    if (!running || !endTimeRef.current) return;
+
+    const updateTimer = () => {
+      const now = Date.now();
+      let remaining = Math.ceil(
+        (endTimeRef.current - now) / 1000
+      );
+
+      if (remaining <= 0) {
+        if (repeatPotSkillRef.current) {
+          while (endTimeRef.current <= now) {
+            endTimeRef.current += 600000;
           }
 
+          remaining = Math.ceil(
+            (endTimeRef.current - now) / 1000
+          );
+        } else {
+          runningRef.current = false;
           setRunning(false);
-          alert("Pot Skill acabou!");
-          return 600;
+          setSeconds(600);
+          return;
         }
+      }
 
-        return prev - 1;
-      });
-    }, 1000);
+      setSeconds(remaining);
+    };
 
-    return () => clearInterval(interval);
-  }, [running, repeatPotSkill]);
+    updateTimer();
+
+    const interval = setInterval(updateTimer, 250);
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        updateTimer();
+      }
+    };
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
+
+    return () => {
+      clearInterval(interval);
+
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
+    };
+  }, [running]);
 
   useEffect(() => {
     if (!animations) return;
@@ -106,9 +152,73 @@ export default function App() {
     return () => clearInterval(interval);
   }, [animations]);
 
-  function playAlert() {
-    const audio = new Audio("/alert.mp3");
-    audio.play().catch(() => {});
+  async function prepareAudio() {
+    const AudioContext =
+      window.AudioContext || window.webkitAudioContext;
+
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new AudioContext();
+    }
+
+    const audioContext = audioCtxRef.current;
+
+    if (audioContext.state === "suspended") {
+      await audioContext.resume();
+    }
+
+    if (!alertBufferRef.current) {
+      const response = await fetch("/alert.mp3");
+      const arrayBuffer = await response.arrayBuffer();
+
+      alertBufferRef.current =
+        await audioContext.decodeAudioData(arrayBuffer);
+    }
+  }
+
+  function stopScheduledAlert() {
+    if (!scheduledAlertRef.current) return;
+
+    scheduledAlertRef.current.onended = null;
+
+    try {
+      scheduledAlertRef.current.stop();
+    } catch {
+      // já terminou
+    }
+
+    scheduledAlertRef.current = null;
+  }
+
+  async function scheduleAlert(delaySeconds) {
+    await prepareAudio();
+
+    stopScheduledAlert();
+
+    const audioContext = audioCtxRef.current;
+
+    const source = audioContext.createBufferSource();
+
+    source.buffer = alertBufferRef.current;
+    source.connect(audioContext.destination);
+
+    scheduledAlertRef.current = source;
+
+    source.onended = () => {
+      if (scheduledAlertRef.current === source) {
+        scheduledAlertRef.current = null;
+      }
+
+      if (
+        runningRef.current &&
+        repeatPotSkillRef.current
+      ) {
+        scheduleAlert(600);
+      }
+    };
+
+    source.start(
+      audioContext.currentTime + delaySeconds
+    );
   }
 
   function formatTime(value) {
@@ -117,10 +227,62 @@ export default function App() {
     return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   }
 
+  async function startPotSkill() {
+    if (runningRef.current) return;
+
+    try {
+      await prepareAudio();
+    } catch (error) {
+      console.error("Erro ao preparar áudio:", error);
+    }
+
+    const duration = seconds > 0 ? seconds : 600;
+
+    endTimeRef.current =
+      Date.now() + duration * 1000;
+
+    runningRef.current = true;
+    setRunning(true);
+
+    try {
+      await scheduleAlert(duration);
+    } catch (error) {
+      console.error("Erro ao agendar alerta:", error);
+    }
+  }
+
+  function pausePotSkill() {
+    if (!runningRef.current) return;
+
+    const remaining = endTimeRef.current
+      ? Math.max(
+          0,
+          Math.ceil(
+            (endTimeRef.current - Date.now()) / 1000
+          )
+        )
+      : seconds;
+
+    runningRef.current = false;
+
+    setRunning(false);
+    setSeconds(remaining);
+
+    endTimeRef.current = null;
+
+    stopScheduledAlert();
+  }
+
   function resetPotSkill() {
+    runningRef.current = false;
+
     setRunning(false);
     setSeconds(600);
-  }
+
+    endTimeRef.current = null;
+
+    stopScheduledAlert();
+}
 
   function addCustomTimer() {
     const min = Number(customMinutes || 0);
@@ -163,11 +325,11 @@ export default function App() {
           </label>
 
           <div className="buttons">
-            <button className="start" onClick={() => setRunning(true)}>
+            <button className="start" onClick={startPotSkill}>
               ▶ Iniciar
             </button>
 
-            <button className="pause" onClick={() => setRunning(false)}>
+            <button className="pause" onClick={pausePotSkill}>
               ⏸ Pausar
             </button>
 
